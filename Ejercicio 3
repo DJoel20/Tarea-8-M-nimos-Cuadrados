@@ -1,0 +1,92 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error
+
+# Datos
+xi = np.array([4.0, 4.2, 4.5, 4.7, 5.1, 5.5, 5.9, 6.3, 6.8, 7.1])
+yi = np.array([102.56, 130.11, 113.18, 142.05, 167.53, 195.14, 224.87, 256.73, 299.50, 326.72])
+
+# Ajuste lineal (polinomio de grado 1)
+coeffs_1 = np.polyfit(xi, yi, 1)
+p1 = np.poly1d(coeffs_1)
+y_pred_1 = p1(xi)
+error_1 = mean_squared_error(yi, y_pred_1)
+
+# Ajuste cuadrático (polinomio de grado 2)
+coeffs_2 = np.polyfit(xi, yi, 2)
+p2 = np.poly1d(coeffs_2)
+y_pred_2 = p2(xi)
+error_2 = mean_squared_error(yi, y_pred_2)
+
+# Ajuste cúbico (polinomio de grado 3)
+coeffs_3 = np.polyfit(xi, yi, 3)
+p3 = np.poly1d(coeffs_3)
+y_pred_3 = p3(xi)
+error_3 = mean_squared_error(yi, y_pred_3)
+
+# Ajuste exponencial
+log_yi = np.log(yi)
+coeffs_exp = np.polyfit(xi, log_yi, 1)
+a_exp = coeffs_exp[0]
+b_exp = np.exp(coeffs_exp[1])
+y_pred_exp = b_exp * np.exp(a_exp * xi)
+error_exp = mean_squared_error(yi, y_pred_exp)
+
+# Ajuste potencial
+log_xi = np.log(xi)
+log_yi = np.log(yi)
+coeffs_pot = np.polyfit(log_xi, log_yi, 1)
+a_pot = coeffs_pot[0]
+b_pot = np.exp(coeffs_pot[1])
+y_pred_pot = b_pot * xi**a_pot
+error_pot = mean_squared_error(yi, y_pred_pot)
+
+# Función para convertir coeficientes en fórmula de polinomio
+def polinomio_str(coefs):
+    terms = [f"{coef:+.2f}x^{i}" if i > 1 else (f"{coef:+.2f}x" if i == 1 else f"{coef:+.2f}")
+             for i, coef in enumerate(coefs[::-1])]
+    return " ".join(terms)
+
+# Resultados
+resultados = {
+    'Grado 1': {'Coeficientes': coeffs_1, 'Error': error_1, 'Fórmula': polinomio_str(coeffs_1)},
+    'Grado 2': {'Coeficientes': coeffs_2, 'Error': error_2, 'Fórmula': polinomio_str(coeffs_2)},
+    'Grado 3': {'Coeficientes': coeffs_3, 'Error': error_3, 'Fórmula': polinomio_str(coeffs_3)},
+    'Exponencial': {'Coeficientes': (a_exp, b_exp), 'Error': error_exp, 'Fórmula': f"{b_exp:.2f}e^({a_exp:.2f}x)"},
+    'Potencial': {'Coeficientes': (a_pot, b_pot), 'Error': error_pot, 'Fórmula': f"{b_pot:.2f}x^{a_pot:.2f}"}
+}
+
+# Imprimir resultados
+for key, value in resultados.items():
+    print(f"{key}:")
+    print(f" Coeficientes: {value['Coeficientes']}")
+    print(f" Error (MSE): {value['Error']}")
+    print(f" Fórmula: {value['Fórmula']}")
+    print()
+
+# Visualización
+plt.figure(figsize=(14, 8))
+plt.scatter(xi, yi, color='black', label='Datos originales')
+x_fit = np.linspace(min(xi), max(xi), 100)
+
+# Grado 1
+plt.plot(x_fit, p1(x_fit), label=f'Grado 1 (Error: {error_1:.2f})', linestyle='--')
+
+# Grado 2
+plt.plot(x_fit, p2(x_fit), label=f'Grado 2 (Error: {error_2:.2f})', linestyle='--')
+
+# Grado 3
+plt.plot(x_fit, p3(x_fit), label=f'Grado 3 (Error: {error_3:.2f})', linestyle='--')
+
+# Exponencial
+plt.plot(x_fit, b_exp * np.exp(a_exp * x_fit), label=f'Exponencial (Error: {error_exp:.2f})', linestyle='--')
+
+# Potencial
+plt.plot(x_fit, b_pot * x_fit**a_pot, label=f'Potencial (Error: {error_pot:.2f})', linestyle='--')
+
+plt.xlabel('xi')
+plt.ylabel('yi')
+plt.title('Ajustes de modelos y errores')
+plt.legend()
+plt.grid(True)
+plt.show()
